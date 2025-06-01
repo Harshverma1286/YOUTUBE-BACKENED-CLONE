@@ -8,7 +8,18 @@ const connectdb = require('./db');
 
 
 
-connectdb();
+connectdb().
+then(()=>{
+    app.on("error",(error)=>{
+        console.log("error",error);
+        throw error;
+    })
+    app.listen(process.env.PORT || 3000,function(){
+        console.log(`The server is successfully working on ${process.env.PORT}`);
+    })
+}).catch((err)=>{
+    console.log("ERROR : ",err);
+})
 
 // ( async ()=>{
 //     try{
