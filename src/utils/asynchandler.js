@@ -1,8 +1,9 @@
-const asynchandler = (fun) => async(req,res,next)=>{
+const asynchandler = (fn) => async(req,res,next)=>{
     try{
         await fn(req,res,next);
     }catch(err){
-        res.send(err.code || 500).json({
+        console.log("caught error :",err);
+        res.status(err.code || 500).json({
             success:false,
             message:err.message,
         })
@@ -15,4 +16,4 @@ const asynchandler = (fun) => async(req,res,next)=>{
 //     }
 // }
 
-module.exports = {asynchandler};
+module.exports = asynchandler;
