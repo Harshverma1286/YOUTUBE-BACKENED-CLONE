@@ -1,9 +1,8 @@
 const asynchandler = require('../utils/asynchandler');
 
 const reqisteruser = asynchandler( async (req,res)=>{
-    res.status(200).json({
-        message:"USER REGISTERED!",
-    })
+
+    const{username,email,password,fullname} = req.body;
 })
 
 module.exports = reqisteruser;

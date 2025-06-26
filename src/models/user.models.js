@@ -23,6 +23,12 @@ const userSchema = mongoose.Schema(
             trim:true,
             index:true,
         },
+        fullname:{
+            type:String,
+            required:true,
+            trim:true,
+            index:true,
+        },
         avatar:{
             type:String,
             required:true,
