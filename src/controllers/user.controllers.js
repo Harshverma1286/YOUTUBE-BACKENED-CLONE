@@ -34,6 +34,8 @@ const reqisteruser = asynchandler( async (req,res)=>{
         throw new ApiError(400,"user already exist");
     }
 
+    console.log(req.files);
+
     const avatarlocalfilepath = req.files?.avatar[0].path; // this is path // to check the images and avatar
 
     const coverimagelocalpath = req.files?.coverimage[0].path;
@@ -46,10 +48,11 @@ const reqisteruser = asynchandler( async (req,res)=>{
 
     const coverimage = await uploadoncloudinary(coverimagelocalpath);
 
+    console.log("Cloudinary avatar response:", avatar);
+
     if(!avatar){
         throw new ApiError(400,"avatar file is required"); 
     }
-
     const users = await user.create({
         fullname,
         email,

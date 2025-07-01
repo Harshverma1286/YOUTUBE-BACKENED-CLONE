@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
-const { use } = require('react');
+
 
 const userSchema = mongoose.Schema(
     {

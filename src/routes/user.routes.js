@@ -6,16 +6,16 @@ const router = express.Router();
 const registeruser = require('../controllers/user.controllers')
 
 router.route("/register").post(
-    upload.fields(
+    upload.fields([
         {
             name:"avatar",
-            maxcount:1
+            maxCount:1
         },
         {
             name:"coverimage",
-            maxcount:1,
+            maxCount:1,
         },
-    ),
+    ]),
     registeruser);
 
 
