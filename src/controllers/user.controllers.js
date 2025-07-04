@@ -11,10 +11,12 @@ const ApiResponse = require("../utils/apiresponse");
 const generateaccessandrefereshtokens = async(userid)=>{
     try {
         const users = await user.findById(userid);
-        const accesstoken = users.generateAccessToken();
-        const refreshtoken = users.generateRefreshToken();
+        const accesstoken = await users.generateAccessToken();
+        const refreshtoken = await users.generateRefreshToken();
+
+
         users.refreshtoken = refreshtoken;
-        await user.save({ValidateBeforeSave: false});
+        await users.save({ validateBeforeSave: false });
         return {accesstoken,refreshtoken};
 
     } catch (error) {
@@ -93,7 +95,7 @@ const registeruser = asynchandler( async (req,res)=>{
 const loginuser = asynchandler( async(req,res)=>{
     const{email,username,password} = req.body;
 
-    if(!username || !email){
+    if(!username && !email){
         throw new ApiError(400,"username or email required");
     }
 
@@ -113,9 +115,12 @@ const loginuser = asynchandler( async(req,res)=>{
 
     const {accesstoken,refreshtoken} = await generateaccessandrefereshtokens(users._id);
 
+
+
     const loggedinuser = await user.findById(users._id).select(
         "-password -refreshtoken"
     )
+
 
     const options = {
         httpOnly: true,
@@ -124,7 +129,7 @@ const loginuser = asynchandler( async(req,res)=>{
 
     return res.status(200).
     cookie("accesstoken",accesstoken,options).
-    cookie("refereshtoken",refreshtoken,options).
+    cookie("refereshtoken",refreshtoken,options). 
     json(
         new ApiResponse(200,
             {

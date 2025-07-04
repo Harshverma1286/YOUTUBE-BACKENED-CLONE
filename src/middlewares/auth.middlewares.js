@@ -9,9 +9,18 @@ const verifyjwt = asynchandler(async(req,res,next)=>{
     try {
         const token = req.cookies?.accesstoken || req.header("Authorization")?.replace("Bearer ","");
 
-        if(!token){
-            throw new ApiError(401,"unauthorized request");
+        
+
+        console.log("Received Token (raw):", token);
+        console.log("Type of token:", typeof token);
+
+
+        console.log("Received Token:", token);
+        if (!token || typeof token !== "string") {
+            throw new ApiError(401, "Access token missing or invalid");
         }
+
+        console.log("Received Token:", token);
         const decodedtoken = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
 
         const actualuser = await user.findById(decodedtoken?._id).select(
