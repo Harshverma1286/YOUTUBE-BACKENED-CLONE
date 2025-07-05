@@ -5,7 +5,7 @@ const Authorization = require("../middlewares/auth.middlewares");
 
 const router = express.Router();
 
-const {registeruser,loginuser,logoutuser} = require('../controllers/user.controllers')
+const {registeruser,loginuser,logoutuser,refreshacesstoken} = require('../controllers/user.controllers')
 
 router.route("/register").post(
     upload.fields([
@@ -23,6 +23,8 @@ router.route("/register").post(
 router.route("/login").post(loginuser);
 
 router.route("/logout").post(Authorization,logoutuser);
+
+router.route("/refresh-token").post(refreshacesstoken);
 
 
 module.exports = router;
