@@ -10,6 +10,39 @@ const ApiResponse = require("../utils/apiresponse");
 
 const jwt = require('jsonwebtoken');
 
+const cloudinary = require('cloudinary').v2;
+
+const deletefromcloudinary = async(userid) =>{
+    if(!userid){
+        throw new ApiError(400,"id has not been recived");
+    }
+
+    try {
+        const deletetheimage = await cloudinary.uploader.destroy(userid);
+        return deletetheimage;
+    } catch (error) {
+        console.error("Error deleting from Cloudinary:", error);
+        throw new ApiError(500, "Cloudinary deletion failed");
+    }
+}
+
+const getPublicIdFromUrl = (url) => {
+    try {
+        const parts = url.split("/");
+
+        const fileWithExt = parts[parts.length - 1];
+
+        const fileName = fileWithExt.split(".")[0];
+
+        const folder = parts[parts.length - 2];
+
+        return `${folder}/${fileName}`;
+    } catch (error) {
+        console.error("Failed to extract public_id from URL:", error);
+        return null;
+    }
+};
+
 const generateaccessandrefereshtokens = async(userid)=>{
     try {
         const users = await user.findById(userid);
@@ -277,6 +310,9 @@ const updateavatarorfiles = asynchandler(async(req,res)=>{
         throw new ApiError(400,"error while uploading avatar");
     }
 
+    const currentUser = await user.findById(req.user._id);
+    const oldAvatarUrl = currentUser.avatar;
+
     const users = await user.findByIdAndUpdate(
         req.user._id,
         {
@@ -286,6 +322,13 @@ const updateavatarorfiles = asynchandler(async(req,res)=>{
         },
         {new:true}
     ).select("-password");
+
+    if(oldAvatarUrl){
+        const publicId = getPublicIdFromUrl(oldAvatarUrl);
+        await deletefromcloudinary(publicId);
+    }
+
+
 
     return res.status(200).json(
         new ApiResponse(200,
