@@ -349,6 +349,9 @@ const updatecoverimageorfiles = asynchandler(async(req,res)=>{
         throw new ApiError(400,"error while uploading cover image");
     }
 
+    const currentUser = await user.findById(req.user._id);
+    const oldAvatarUrl = currentUser.avatar;
+
     const users = await user.findByIdAndUpdate(
         req.user._id,
         {
@@ -360,6 +363,11 @@ const updatecoverimageorfiles = asynchandler(async(req,res)=>{
             new:true,
         }
     ).select("-password");
+
+    if(oldAvatarUrl){
+        const publicId = getPublicIdFromUrl(oldAvatarUrl);
+        await deletefromcloudinary(publicId);
+    }
 
 
     return res.status(200).json(
