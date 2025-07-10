@@ -375,9 +375,81 @@ const updatecoverimageorfiles = asynchandler(async(req,res)=>{
     );
 })
 
+const getuserchannelprofile = asynchandler(async(req,res)=>{
+    const {username} = req.params;
+
+    if(!username?.trim()){
+        throw new ApiError(400,"username is missing");
+    }
+
+
+    const channel = await user.aggregate({
+        $match:{
+            username:username?.toLowerCase(),
+        }
+    },
+    {
+        $lookup:{
+            from:"subscription",
+            localField:"_id",//here it means i am finding based on the channels example how much subscriber does chai aur code channel has it means this 
+            foreignField:"channel",
+            as:"subscribersofthefollowingchannel"
+        }
+    },
+    {
+        $lookup:{
+            from:"subscription",
+            localField:"_id",
+            foreignField:"subscriber",
+            as:"subscribedto" // here it means the following channel i have subscribed to example how much channel example harsh has subscribed to 
+        }
+    },
+    {
+        $addFields:{
+            subscribercount:{
+                $size:"$subscribersofthefollowingchannel"
+            },
+            subscribedtocount:{
+                $size:"$subscribedto"
+            },
+            issubscribed:{
+                $cond:{
+                    if:{$in:[req.user?._id,"$subscribersofthefollowingchannel.subscriber"]},
+                    then:true,
+                    else:false
+                }
+            }
+        }
+    },
+    {
+        $project:{
+            fullname:1,
+            username:1,
+            subscribersofthefollowingchannel:1,
+            subscribedto:1,
+            subscribercount:1,
+            subscribedtocount:1,
+            issubscribed:1,
+            avatar:1,
+            coverimage:1,
+            email:1
+
+        }
+    }
+    )
+
+    if(!channel?.length){
+        throw new ApiError(404,"channel not found")
+    }
+
+    return res.ststus(200).json(
+        new ApiResponse(200,channel[0],"user channel fetched successfully")
+    )
+})
 
 
 
 
 
-module.exports = {registeruser,loginuser,logoutuser,refreshacesstoken,changecurrentpassword,getcurrentuser,updateaccountdetails,updateavatarorfiles,updatecoverimageorfiles};
+
+module.exports = {registeruser,loginuser,logoutuser,refreshacesstoken,changecurrentpassword,getcurrentuser,updateaccountdetails,updateavatarorfiles,updatecoverimageorfiles,getuserchannelprofile};
