@@ -9,6 +9,7 @@ const uploadoncloudinary = require("../utils/cloudinary");
 const ApiResponse = require("../utils/apiresponse");
 
 const jwt = require('jsonwebtoken');
+const { default: mongoose } = require('mongoose');
 
 const cloudinary = require('cloudinary').v2;
 
@@ -449,7 +450,56 @@ const getuserchannelprofile = asynchandler(async(req,res)=>{
 
 
 
+const getuserwatchhistory = asynchandler(async(req,res)=>{
+    const users = await user.aggregate([
+        {
+            $match:{
+                _id: new mongoose.Types.ObjectId(req.user._id),
+            }
+        },
+        {
+            $lookup:{
+                from:"video",
+                localField:"watchhistory",
+                foreignField:"_id",
+                as:"watch_history",
+                pipeline:[
+                    {
+                        $lookup:{
+                            from:"user",
+                            localField:"owner",
+                            foreignField:"_id",
+                            as:"owner",
+                            pipeline:[
+                                {
+                                    $project:{
+                                        fullname:1,
+                                        username:1,
+                                        avatar:1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            owner:{
+                                $first:"$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res.status(200).json(
+        new ApiResponse(200,users[0].watchhistory,"watch history fetched successfully")
+    )
+})
 
 
 
-module.exports = {registeruser,loginuser,logoutuser,refreshacesstoken,changecurrentpassword,getcurrentuser,updateaccountdetails,updateavatarorfiles,updatecoverimageorfiles,getuserchannelprofile};
+
+
+module.exports = {registeruser,loginuser,logoutuser,refreshacesstoken,changecurrentpassword,getcurrentuser,updateaccountdetails,updateavatarorfiles,updatecoverimageorfiles,getuserchannelprofile,getuserwatchhistory};
