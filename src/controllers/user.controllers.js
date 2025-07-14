@@ -180,8 +180,8 @@ const logoutuser = asynchandler( async(req,res)=>{
     await user.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
-                refreshtoken:undefined
+            $unset:{
+                refreshtoken:1
             }
         },
         {
@@ -202,6 +202,7 @@ const logoutuser = asynchandler( async(req,res)=>{
 })
 
 const refreshacesstoken = asynchandler(async(req,res)=>{
+    console.log("Request body is:", req.body);
     const incomingrefreshtoken = req.cookies.refreshtoken || req.body.refreshtoken;
 
     if(!incomingrefreshtoken){
@@ -209,7 +210,7 @@ const refreshacesstoken = asynchandler(async(req,res)=>{
     }
 
     try {
-        const decodedtoken = jwt.verify(incomingrefreshtoken,REFRESH_TOKEN_SECRET);
+        const decodedtoken = jwt.verify(incomingrefreshtoken,process.env.REFRESH_TOKEN_SECRET);
 
         const users = await user.findById(decodedtoken?._id);
 
@@ -277,8 +278,9 @@ const updateaccountdetails = asynchandler(async(req,res)=>{
     if(!fullname || !email){
         throw new ApiError(400,"user details not recieved");
     }
+    console.log(req.user);
 
-    const users = await user.findByIdAndUpdate(req.user._id)(
+    const users = await user.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -288,6 +290,11 @@ const updateaccountdetails = asynchandler(async(req,res)=>{
         },
         {new:true},
     ).select("-password")
+
+    
+    if (!users) {
+        throw new ApiError(404, "User not found or not updated");
+    }
 
     return res.status(200).json(
        new ApiResponse( 200,
@@ -384,7 +391,7 @@ const getuserchannelprofile = asynchandler(async(req,res)=>{
     }
 
 
-    const channel = await user.aggregate({
+    const channel = await user.aggregate([{
         $match:{
             username:username?.toLowerCase(),
         }
@@ -437,13 +444,13 @@ const getuserchannelprofile = asynchandler(async(req,res)=>{
 
         }
     }
-    )
+    ]);
 
     if(!channel?.length){
         throw new ApiError(404,"channel not found")
     }
 
-    return res.ststus(200).json(
+    return res.status(200).json(
         new ApiResponse(200,channel[0],"user channel fetched successfully")
     )
 })

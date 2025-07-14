@@ -30,11 +30,11 @@ router.route("/changepassword").post(Authorization,changecurrentpassword);
 
 router.route("/getcurrentuser").post(Authorization,getcurrentuser);
 
-router.route("/updateaccountdetails").patch(updateaccountdetails);
+router.route("/updateaccountdetails").patch(Authorization,updateaccountdetails);
 
 router.route("/updateavatar").patch(Authorization,upload.single("avatar"),updateavatarorfiles);
 
-router.route("/updatecoverimage").patch(Authorization,upload.single("coverimage"),updatecoverimageorfiles);
+router.route("/updatecoverimage").patch(Authorization,upload.single("coverimage"),updatecoverimageorfiles); // done uptil here
 
 router.route("/c/:username").get(Authorization,getuserchannelprofile);
 
