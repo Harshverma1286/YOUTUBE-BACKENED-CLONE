@@ -33,15 +33,15 @@ const videoSchema = mongoose.Schema(
             default:true,
         },
         owner:{
-            type:mongoose.Schema.Types.ObjectId,
+           type:mongoose.Schema.Types.ObjectId,
             ref:"user"
         }
     },
     {
-        timestamp:true,
+        timestamps:true,
     }
 );
 
 videoSchema.plugin(mongooseAgregatePaginate); // for efficient searching plug ins
 
-mongoose.export = mongoose.model("video",videoSchema);
+module.exports = mongoose.model("video",videoSchema);
