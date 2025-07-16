@@ -3,7 +3,7 @@ const express = require('express');
 
 const upload = require("../middlewares/multer.middlewares")
 
-const{publishavideo} = require("../controllers/video.controllers");
+const{publishavideo,getvideobyid,updateavideo} = require("../controllers/video.controllers");
 
 const Authorization = require("../middlewares/auth.middlewares");
 
@@ -21,5 +21,16 @@ router.route("/publishvideo").post(Authorization,
         }
 ]),
 publishavideo);
+
+router.route("/getvideo").get(Authorization,getvideobyid);
+
+router.route("/c/:videoid").patch(
+    Authorization,
+    upload.single("thumbnail"),
+    updateavideo);
+
+    
+
+
 
 module.exports = router;

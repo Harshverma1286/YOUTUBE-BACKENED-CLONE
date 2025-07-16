@@ -336,8 +336,6 @@ const updateavatarorfiles = asynchandler(async(req,res)=>{
         await deletefromcloudinary(publicId);
     }
 
-
-
     return res.status(200).json(
         new ApiResponse(200,
         users,
