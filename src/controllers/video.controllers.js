@@ -101,7 +101,7 @@ const publishavideo = asynchandler(async(req,res)=>{
         title,
         description,
         visibility: finalVisibility,
-        duration: video.duration || 0, // optional
+        duration: video.duration || 0, // optional i will do it later on have to deal with cloudinary duration to do later
         owner: req.user._id
     });
 
