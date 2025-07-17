@@ -4,7 +4,7 @@ const ApiError = require("../utils/apierror");
 
 const user = require("../models/user.models");
 
-const uploadoncloudinary = require("../utils/cloudinary");
+const {uploadoncloudinary,deletefromcloudinary} = require("../utils/cloudinary");
 
 const ApiResponse = require("../utils/apiresponse");
 
@@ -16,19 +16,7 @@ const cloudinary = require('cloudinary').v2;
 const Video = require("../models/videos.models");
 const { urlencoded } = require('express');
 
-const deletefromcloudinary = async(userid) =>{
-    if(!userid){
-        throw new ApiError(400,"id has not been recived");
-    }
 
-    try {
-        const deletetheimage = await cloudinary.uploader.destroy(userid);
-        return deletetheimage;
-    } catch (error) {
-        console.error("Error deleting from Cloudinary:", error);
-        throw new ApiError(500, "Cloudinary deletion failed");
-    }
-}
 
 const getPublicIdFromUrl = (url) => {
     try {
@@ -52,7 +40,7 @@ const getallvideos = asynchandler(async(req,res)=>{
 });
 
 const publishavideo = asynchandler(async(req,res)=>{
-    const{title,description,visibility} = req.body;
+    const{title,description} = req.body;
 
     if(!title){
         throw new ApiError(400,"title is required");
@@ -83,26 +71,14 @@ const publishavideo = asynchandler(async(req,res)=>{
         throw new ApiError(500,"something went wrong while uploading thumbnail");
     }
 
-    let finalVisibility;
-
-    if (visibility === "public") {
-        finalVisibility = "public";
-    } else if (visibility === "private") {
-        finalVisibility = "private";
-    } else if (visibility === "unlisted") {
-        finalVisibility = "unlisted";
-    } else {
-        finalVisibility = "public"; 
-    }
-
     const newVideo = await Video.create({
         videofile: video.secure_url,
         thumbnail: thumbnail.secure_url,
         title,
         description,
-        visibility: finalVisibility,
         duration: video.duration || 0, // optional i will do it later on have to deal with cloudinary duration to do later
-        owner: req.user._id
+        owner: req.user._id,
+        ispublished:true,
     });
 
     return res.status(200).json(
@@ -207,8 +183,68 @@ const updateavideo = asynchandler(async(req,res)=>{
 
 })
 
+const deleteavideo = asynchandler(async(req,res)=>{
+    const {videoid} = req.params;
+
+    if(!videoid){
+        throw new ApiError(400,"videoid does not got");
+    }
+
+    const video = await Video.findById(videoid);
+
+    if(!video){
+        throw new ApiError(400,"video does not exist which u want to delete");
+    }
+
+    if(req.user._id.toString()!==video.owner.toString()){
+        throw new ApiError(403, "You are not authorized to delete this video");
+    }
+
+    // const videoPublicId = getPublicIdFromUrl(video.videoUrl);
+    // await deletefromcloudinary(videoPublicId, "video");
+
+    // if(video.thumbnail){
+    //     const thumbnailPublicId = getPublicIdFromUrl(video.thumbnail);
+    //     await deletefromcloudinary(thumbnailPublicId, "image");
+    // }
+
+    // await Video.findByIdAndDelete(videoPublicId); this is the optional way 
+
+    // best way is 
+
+    await Video.findByIdAndUpdate(videoid, { ispublished: false });
+
+    return res.status(200).json(
+        new ApiResponse(200,"video deleted successfully")
+    )
+
+});
+
+const togglepublishstatus = asynchandler(async(req,res)=>{
+    const {videoid} = req.params;
+
+    if(!videoid){
+        throw new ApiError(400,"video id does not recieved");
+    }
 
 
+    const video = await  Video.findById(videoid);
+
+    if(!video){
+        throw new ApiError(400,"video does not exist");
+    }
 
 
-module.exports = {publishavideo,getvideobyid,updateavideo};
+    if(req.user._id.toString()!==video.owner.toString()){
+        throw new ApiError(400,"permisiion denied to delete a video");
+    }
+
+    video.ispublished = !video.ispublished;
+
+    await  video.save();
+
+    return res.status(200).json(new ApiResponse(200,"video toggled successfully"))
+})
+
+
+module.exports = {publishavideo,getvideobyid,updateavideo,deleteavideo,togglepublishstatus};

@@ -35,11 +35,6 @@ const videoSchema = mongoose.Schema(
         owner:{
            type:mongoose.Schema.Types.ObjectId,
             ref:"user"
-        },
-        visibility:{
-            type:String,
-            enum: ["public", "private", "unlisted"],
-            default: "public",
         }
     },
     {

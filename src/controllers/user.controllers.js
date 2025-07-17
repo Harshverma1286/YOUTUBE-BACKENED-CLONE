@@ -4,7 +4,7 @@ const ApiError = require("../utils/apierror");
 
 const user = require("../models/user.models");
 
-const uploadoncloudinary = require("../utils/cloudinary");
+const {uploadoncloudinary,deletefromcloudinary} = require("../utils/cloudinary");
 
 const ApiResponse = require("../utils/apiresponse");
 
@@ -12,20 +12,6 @@ const jwt = require('jsonwebtoken');
 const { default: mongoose } = require('mongoose');
 
 const cloudinary = require('cloudinary').v2;
-
-const deletefromcloudinary = async(userid) =>{
-    if(!userid){
-        throw new ApiError(400,"id has not been recived");
-    }
-
-    try {
-        const deletetheimage = await cloudinary.uploader.destroy(userid);
-        return deletetheimage;
-    } catch (error) {
-        console.error("Error deleting from Cloudinary:", error);
-        throw new ApiError(500, "Cloudinary deletion failed");
-    }
-}
 
 const getPublicIdFromUrl = (url) => {
     try {
