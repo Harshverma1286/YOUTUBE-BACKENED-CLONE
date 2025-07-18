@@ -36,7 +36,44 @@ const getPublicIdFromUrl = (url) => {
 };
 
 const getallvideos = asynchandler(async(req,res)=>{
-      // i will do it later on
+      const {page = 1,limit = 10,sortBy,sortType,userId} = req.query;
+
+      if(!userId){
+        throw new ApiError(400,"user id is required");
+      }
+
+
+      const videos = Video.aggregate([
+        {
+            $match:{
+                owner:new mongoose.Types.ObjectId(userId),
+            }
+        },
+        {
+            $lookup:{
+                from:"users",
+                localfield:"owner",
+                foreignfield:"_id",
+                as:"ownerdetails",
+            }
+        },
+        {
+            $unwind:"$ownerdetails"
+        },
+        {
+            $sort:{
+                [sortBy]:sortType==="asc" ? 1 : -1
+            }
+        },
+        {
+            $skip:(parseInt(page)-1)*parseInt(limit),
+        },
+        {
+            $limit:parseInt(limit),
+        }
+      ]);
+
+       return res.status(200).json(200,videos,"video fetched successfully");
 });
 
 const publishavideo = asynchandler(async(req,res)=>{
@@ -247,4 +284,4 @@ const togglepublishstatus = asynchandler(async(req,res)=>{
 })
 
 
-module.exports = {publishavideo,getvideobyid,updateavideo,deleteavideo,togglepublishstatus};
+module.exports = {publishavideo,getvideobyid,updateavideo,deleteavideo,togglepublishstatus,getallvideos};

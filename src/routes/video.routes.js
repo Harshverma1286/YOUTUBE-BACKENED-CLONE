@@ -3,7 +3,7 @@ const express = require('express');
 
 const upload = require("../middlewares/multer.middlewares")
 
-const{publishavideo,getvideobyid,updateavideo, deleteavideo, togglepublishstatus} = require("../controllers/video.controllers");
+const{publishavideo,getvideobyid,updateavideo, deleteavideo, togglepublishstatus, getallvideos} = require("../controllers/video.controllers");
 
 const Authorization = require("../middlewares/auth.middlewares");
 
@@ -34,7 +34,7 @@ router.route("/c/:videoid").patch(Authorization,deleteavideo);
 
 router.route("/c/:videoid").patch(Authorization,togglepublishstatus);
 
-
+router.route("/c/page/:page/limit/:limit/sortBy/:sortBy/sortType/:sortType/userId/:userId"),get(Authorization,getallvideos);
 
 
 
