@@ -8,7 +8,6 @@ const {uploadoncloudinary,deletefromcloudinary} = require("../utils/cloudinary")
 
 const ApiResponse = require("../utils/apiresponse");
 
-const jwt = require('jsonwebtoken');
 const { default: mongoose } = require('mongoose');
 
 const cloudinary = require('cloudinary').v2;
@@ -36,25 +35,25 @@ const getPublicIdFromUrl = (url) => {
 };
 
 const getallvideos = asynchandler(async(req,res)=>{
-      const {page = 1,limit = 10,sortBy,sortType,userId} = req.query;
+      const {page = 1,limit = 10,sortBy,sortType,userId} = req.params;
 
       if(!userId){
         throw new ApiError(400,"user id is required");
       }
 
 
-      const videos = Video.aggregate([
+      const videos = await Video.aggregate([
         {
             $match:{
                 owner:new mongoose.Types.ObjectId(userId),
             }
         },
         {
-            $lookup:{
-                from:"users",
-                localfield:"owner",
-                foreignfield:"_id",
-                as:"ownerdetails",
+           $lookup: {
+                from: "users",
+                localField: "owner",       
+                foreignField: "_id",        
+                as: "ownerdetails"
             }
         },
         {
@@ -73,7 +72,7 @@ const getallvideos = asynchandler(async(req,res)=>{
         }
       ]);
 
-       return res.status(200).json(200,videos,"video fetched successfully");
+       res.status(200).json(new ApiResponse(200,videos, "video fetched successfully"));
 });
 
 const publishavideo = asynchandler(async(req,res)=>{
@@ -132,27 +131,11 @@ const getvideobyid = asynchandler(async(req,res)=>{
 
     const video = await Video.findById(videoid);
 
-    if(!video){
+    if(!video || video.ispublished === false){
         throw new ApiError(400,"video not found or video does not exist");
     }
 
-    const useracessing = req.user._id;
-
-    if(video.visibility=="public" || video.visibility=="unlisted"){
-        return res.status(200).json(
-            new ApiResponse(200,video,"video fetched successfully")
-        )
-    }
-    if(video.visibility=="private"){
-        if(video.owner.toString()===useracessing.toString()){
-             return res.status(200).json(
-                 new ApiResponse(200,video,"video fetched successfully")
-            )
-        }
-        else{
-            throw new ApiError(403,"video accessed denied");
-        }
-    }
+    return res.status(200).json(new ApiResponse(200,video,"video fetched successfully"));
 });
 
 const updateavideo = asynchandler(async(req,res)=>{
@@ -165,7 +148,7 @@ const updateavideo = asynchandler(async(req,res)=>{
     const video = await Video.findById(videoid);
 
     if(!video){
-        throw new ApiError(403,"video nott found or video does not exist");
+        throw new ApiError(403,"video not found or video does not exist");
     }
 
     const usernow = req.user._id;

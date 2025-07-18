@@ -9,32 +9,34 @@ const Authorization = require("../middlewares/auth.middlewares");
 
 const router = express.Router();
 
-router.route("/publishvideo").post(Authorization,
+router.route("/publishvideo").post(// so working fine
+    Authorization,
     upload.fields([
         {
-            name:"videofile",
-            maxCount:1,
+            name: "videofile",
+            maxCount: 1,
         },
         {
-            name:"thumbnail",
-            maxCount:1
-        }
-]),
-publishavideo);
+            name: "thumbnail",
+            maxCount: 1,
+        },
+    ]),
+    publishavideo
+);
 
-router.route("/getvideo").get(Authorization,getvideobyid);
+router.route("/getvideo/:videoid").get(Authorization,getvideobyid);//working fine
 
 router.route("/c/:videoid").patch(
     Authorization,
     upload.single("thumbnail"),
-    updateavideo);
+    updateavideo);//working fine
 
 
-router.route("/c/:videoid").patch(Authorization,deleteavideo);
+router.route("/c/:videoid").delete(Authorization,deleteavideo); //working fine
 
-router.route("/c/:videoid").patch(Authorization,togglepublishstatus);
+router.route("/toggle/:videoid").patch(Authorization,togglepublishstatus); // working fine
 
-router.route("/c/page/:page/limit/:limit/sortBy/:sortBy/sortType/:sortType/userId/:userId"),get(Authorization,getallvideos);
+router.route("/c/page/:page/limit/:limit/sortBy/:sortBy/sortType/:sortType/userId/:userId").get(Authorization,getallvideos);//working fine
 
 
 
