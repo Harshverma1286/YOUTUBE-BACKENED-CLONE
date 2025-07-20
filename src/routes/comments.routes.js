@@ -5,7 +5,7 @@ const { addcomments, updatecomment, deletecomment,getallcomments } = require('..
 
 const router = express.Router();
 
-router.route("/c/:videoId").get(Authorization, getallcomments);
+router.route("/getallcomments/:videoId").get(Authorization, getallcomments);
 
 router.route("/c/:videoId").post(Authorization,addcomments);
 

@@ -11,6 +11,7 @@ const { default: mongoose } = require('mongoose');
 
 
 const getallcomments = asynchandler(async(req,res)=>{
+
     const {videoId} = req.params;
 
     const {page =1 ,limit = 10}  = req.query;
@@ -20,7 +21,11 @@ const getallcomments = asynchandler(async(req,res)=>{
         throw new apierror(400,"video id does not recieved");
     }
 
+    console.log("Requested videoId:", videoId);
+
     const video = await Video.findById(videoId);
+
+    console.log("Found video:", video);
 
     if(!video){
         throw new apierror(400,"video does not exist");
@@ -65,7 +70,7 @@ const getallcomments = asynchandler(async(req,res)=>{
         )
     );
 
-});
+}); //working well
 
 const addcomments = asynchandler(async(req,res)=>{
     const {videoId} = req.params;
@@ -73,8 +78,11 @@ const addcomments = asynchandler(async(req,res)=>{
     if(!videoId?.trim()){
         throw new apierror(400,"video id not recieved");
     }
+     console.log("Requested videoId:", videoId);
 
     const video = await Video.findById(videoId);
+
+     console.log("Found video:", video);
 
     if(!video){
         throw new apierror(400,"video does not exist");
@@ -99,16 +107,18 @@ const addcomments = asynchandler(async(req,res)=>{
     return res.status(200).json(
         new apiresponse(200,comment,"your comment on the video is created successfully")
     )
-});
+}); // working well
 
 const updatecomment = asynchandler(async(req,res)=>{
-    const {commentid} = req.params;
+    const {commentId} = req.params;
 
-    if(!commentid){
+    console.log(commentId);
+
+    if(!commentId){
         throw new apierror(400,"comment id does not recieved");
     }
 
-    const comment = await Comment.findById(commentid);
+    const comment = await Comment.findById(commentId);
 
     if(!comment){
         throw new apierror(400,"comment does not exist");
@@ -120,12 +130,14 @@ const updatecomment = asynchandler(async(req,res)=>{
 
     const {content} = req.body;
 
+    console.log(content);
+
     if(!content?.trim()){
         throw new apierror(400,"content does not recived");
     }
 
     const updatecomment = await Comment.findByIdAndUpdate(
-        commentid,
+        commentId,
         {
             $set:{
                 content:content
@@ -142,7 +154,7 @@ const updatecomment = asynchandler(async(req,res)=>{
         new apiresponse(200,updatecomment,"comment updated successfully")
     )
 
-});
+}); // working well
 
 const deletecomment = asynchandler(async(req,res)=>{
     const {commentid} = req.params;
@@ -166,7 +178,7 @@ const deletecomment = asynchandler(async(req,res)=>{
     return res.status(200).json(
         new apiresponse(200,"comment deleted successfully")
     )
-});
+}); // working well
 
 
 
