@@ -144,8 +144,119 @@ const deletevideosfromplaylist = asynchandler(async(req,res)=>{
     )
 });
 
+const deleteplaylist = asynchandler(async(req,res)=>{
+    const{PlaylistId} = req.params;
+
+    if(!PlaylistId){
+        throw new apierror(400,"kindly provide the playlist id");
+    }
+
+    const playlist = await Playlist.findById(PlaylistId);
+
+    if(!playlist){
+        throw new apierror(404,"playlist does not exist");
+    }
+
+    if(playlist.owner.toString()!==req.user._id.toString()){
+        throw new apierror(403,"you are not eligible to delete the playlist");
+    }
+
+    await Playlist.findByIdandDelete(PlaylistId);
+
+
+    return res.status(200).json(
+        new apiresponse(200,"playlist deleted successfully")
+    )
+});
+
+const updateplaylist = asynchandler(async(req,res)=>{
+    const {PlaylistId} = req.params;
+
+    if(!PlaylistId){
+        throw new apierror(400,"kindly provide me the playlist id");
+    }
+
+    const playlist = await Playlist.findById(PlaylistId);
+
+    if(!playlist){
+        throw new apierror(404,"playlist does not found ");
+    }
+
+    if(playlist.owner.toString()!==req.user._id.toString()){
+        throw new apierror(403,"you are not eligible to make changes in the playlist");
+    }
+
+    const {name,description} = req.body;
+
+    if(!name?.trim() && !description?.trim()){
+        throw new apierror(400,"atleast provide me one out of two");
+    }
+
+    const updatefields = {};
+    if(name?.trim()){
+        updatefields.name = name.trim();
+    }
+    if(description.trim()){
+        updatefields.description = description.trim();
+    }
+
+
+    const playlistupdate = await Playlist.findByIdAndUpdate(
+        PlaylistId,
+        {
+            $set:updatefields,
+        },
+        {new:true},
+    )
+
+    if(!playlistupdate){
+        throw new apierror(500,"something went wrong");
+    }
+
+    return res.status(200).json(
+        new apiresponse(200,playlistupdate,"playlist updated successfully")
+    )
+});
+
+
+const getuserplaylists = asynchandler(async(req,res)=>{
+    const {userId} = req.params;
+
+    if(!userId){
+        throw new apierror(200,"kindly provide me the user id");
+    }
+
+    const playlists = await Playlist.aggregate([
+        {
+            $match:{
+                owner:mongoose.Types.ObjectId(userId),
+            }
+        },
+        {
+            $lookup:{
+                from: "users",
+                localField: "owner",       
+                foreignField: "_id",        
+                as: "user"
+            }
+        },
+        {
+            $unwind:"$user"
+        }
+    ]);
+
+    if(playlists.length==0){
+        throw new apierror(404,"user has not made any playlist");
+    }
+
+    return res.status(200).json(
+        new apiresponse(200,playlists,"users all playlist fetched successfully")
+    )
+
+
+});
 
 
 
 
-module.exports = {createplaylist,getplaylistbyid,addvideotoplaylist,deletevideosfromplaylist};
+module.exports = {createplaylist,getplaylistbyid,addvideotoplaylist,deletevideosfromplaylist,deleteplaylist,updateplaylist,getuserplaylists};
