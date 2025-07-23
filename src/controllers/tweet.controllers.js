@@ -22,7 +22,7 @@ const getuseralltweets = asynchandler(async(req,res)=>{
     const findall = await Tweet.aggregate([
         {
             $match:{
-                owner:mongoose.Types.ObjectId(UserId)
+                owner:new mongoose.Types.ObjectId(UserId)
             }
         },
         {

@@ -144,7 +144,7 @@ const getlikedvideos = asynchandler(async(req,res)=>{
     const likedvideos = await Like.aggregate([
         {
             $match:{
-                likedby:mongoose.Types.ObjectId(req.user._id)
+                likedby:new mongoose.Types.ObjectId(req.user._id)
             }
         },
         {
@@ -170,7 +170,9 @@ const getlikedvideos = asynchandler(async(req,res)=>{
     ]);
 
     if(likedvideos.length==0){
-        throw new apierror(500,"something went wrong");
+        return res.status(200).json(
+            new apiresponse(200,[],"no users have liked")
+        )
     }
 
     return res.status(200).json(
