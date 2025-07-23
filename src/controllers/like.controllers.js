@@ -140,7 +140,43 @@ const togletweetlike = asynchandler(async(req,res)=>{
 });
 
 const getlikedvideos = asynchandler(async(req,res)=>{
-    
+
+    const likedvideos = await Like.aggregate([
+        {
+            $match:{
+                likedby:mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup:{
+                from: "videos",
+                localField: "video",       
+                foreignField: "_id",        
+                as: "alllikedvideos"
+            }
+        },
+        {
+            $unwind:"$alllikedvideos"
+        },
+        {
+            $project:{
+                title: "$alllikedvideos.title",
+                description: "$alllikedvideos.description",
+                views: "$alllikedvideos.views",
+                owner: "$alllikedvideos.owner",
+                videoId: "$alllikedvideos._id",
+            }
+        }
+    ]);
+
+    if(likedvideos.length==0){
+        throw new apierror(500,"something went wrong");
+    }
+
+    return res.status(200).json(
+        new apiresponse(200,likedvideos,"all the video liked by the user fetched successfully")
+    )
+
 })
 
 
