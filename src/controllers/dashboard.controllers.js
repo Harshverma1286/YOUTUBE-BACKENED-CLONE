@@ -15,7 +15,56 @@ const Like = require("../models/like.models");
 const Subscription = require("../models/subscription.models");
 
 const getchannelstats = asynchandler(async(req,res)=>{
+    const {channelId} = req.params;
 
+    if(!channelId){
+        throw new apierror(400,"kindly provide me the channel id");
+    }
+
+    if(channelId.toString()!==req.user._id.toString()){
+        throw new apierror(403,"you are not eligible to see the stats");
+    }
+
+    const subscriberscount = await Subscription.countDocuments({channel:channelId});
+
+    const totalvideocount = await Video.countDocuments({owner:channelId});
+
+
+    const totallikesonchannel = await Like.aggregate([
+        {
+            $lookup:{
+                from:"videos",
+                localField:"video",
+                foreignField:"_id",
+                as:"videosdata"
+            }
+        },{
+            $unwind:"$videosdata"
+        },
+        {
+            $match:{
+                'videosdata.owner': new mongoose.Types.ObjectId(channelId)
+            }
+        },
+        {
+            $count:'likecount'
+        }
+    ]);
+
+    const likecount = totallikesonchannel[0]?.likecount || 0;
+
+
+
+    return res.status(200).json(
+        new apiresponse(200,
+            {subscriberscount,
+            likecount,
+            totallikesonchannel,
+            totalvideocount,
+        },
+            "successfully fetched all the requirements"
+        )
+    );
 });
 
 const getchannelvideos = asynchandler(async(req,res)=>{
@@ -73,4 +122,4 @@ const getchannelvideos = asynchandler(async(req,res)=>{
 });
 
 
-module.exports = {getchannelvideos};
+module.exports = {getchannelvideos,getchannelstats};
