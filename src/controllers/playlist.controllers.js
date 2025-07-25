@@ -12,8 +12,6 @@ const Video = require("../models/videos.models");
 
 const User = require("../models/user.models");
 
-const Playlist = require("../models/playlist.models");
-
 
 const createplaylist = asynchandler(async(req,res)=>{
     const {name,description} = req.body;
@@ -36,7 +34,7 @@ const createplaylist = asynchandler(async(req,res)=>{
         new apiresponse(200,playlist,"playlist created successfully")
     )
 
-});
+}); // working well 
 
 const getplaylistbyid = asynchandler(async(req,res)=>{
     const {PlaylistId} = req.params;
@@ -54,7 +52,7 @@ const getplaylistbyid = asynchandler(async(req,res)=>{
     return res.status(200).json(
         new apiresponse(200,playlist,"playlist fetched successfully")
     )
-});
+});// working well
 
 const addvideotoplaylist = asynchandler(async(req,res)=>{
     const {PlaylistId,videoId} = req.params;
@@ -101,7 +99,7 @@ const addvideotoplaylist = asynchandler(async(req,res)=>{
     )
 
 
-});
+});//working well
 
 const deletevideosfromplaylist = asynchandler(async(req,res)=>{
     const {PlaylistId,videoId} = req.params;
@@ -142,7 +140,7 @@ const deletevideosfromplaylist = asynchandler(async(req,res)=>{
     return res.status(200).json(
         new apiresponse(200,"video has been succesffuly removed from the playlist")
     )
-});
+});//working well
 
 const deleteplaylist = asynchandler(async(req,res)=>{
     const{PlaylistId} = req.params;
@@ -161,13 +159,13 @@ const deleteplaylist = asynchandler(async(req,res)=>{
         throw new apierror(403,"you are not eligible to delete the playlist");
     }
 
-    await Playlist.findByIdandDelete(PlaylistId);
+    await Playlist.deleteOne();
 
 
     return res.status(200).json(
         new apiresponse(200,"playlist deleted successfully")
     )
-});
+});//working well
 
 const updateplaylist = asynchandler(async(req,res)=>{
     const {PlaylistId} = req.params;
@@ -216,7 +214,7 @@ const updateplaylist = asynchandler(async(req,res)=>{
     return res.status(200).json(
         new apiresponse(200,playlistupdate,"playlist updated successfully")
     )
-});
+});//working well
 
 
 const getuserplaylists = asynchandler(async(req,res)=>{
@@ -229,7 +227,7 @@ const getuserplaylists = asynchandler(async(req,res)=>{
     const playlists = await Playlist.aggregate([
         {
             $match:{
-                owner:mongoose.Types.ObjectId(userId),
+                owner:new mongoose.Types.ObjectId(userId),
             }
         },
         {
@@ -254,7 +252,7 @@ const getuserplaylists = asynchandler(async(req,res)=>{
     )
 
 
-});
+});// working well
 
 
 

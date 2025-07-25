@@ -15,11 +15,13 @@ const userrouter = require('./routes/user.routes');
 const videorouter = require('./routes/video.routes');
 const commentrouter = require("./routes/comments.routes");
 const tweetrouter = require("./routes/tweet.routes");
+const playlistrouter = require("./routes/playlist.routes");
 
 app.use("/api/v1/users",userrouter);
 app.use("/api/v1/videos",videorouter);
 app.use("/api/v1/comments",commentrouter);
 app.use("/api/v1/tweets",tweetrouter);
+app.use("/api/v1/playlist",playlistrouter);
 
 
 module.exports = app;
